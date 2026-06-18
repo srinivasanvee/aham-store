@@ -1,0 +1,27 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Google's public JWKS endpoint — Spring validates every incoming token here
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+          issuer-uri: https://accounts.google.com
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+gcp:
+  project-id: ${GCP_PROJECT_ID:aham-store}
+  location: ${GCP_LOCATION:us-central1}
+  gemini-model: ${GEMINI_MODEL:gemini-1.5-pro-001}
+  embedding-model: ${EMBEDDING_MODEL:text-embedding-005}
+  top-k-results: ${TOP_K_RESULTS:5}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
