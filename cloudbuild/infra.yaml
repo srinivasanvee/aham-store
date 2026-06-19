@@ -1,0 +1,16 @@
+steps:
+  - id: tf-init
+    name: hashicorp/terraform:1.9
+    entrypoint: terraform
+    args: [init, -input=false]
+    dir: terraform
+
+  - id: tf-apply
+    name: hashicorp/terraform:1.9
+    entrypoint: terraform
+    args: [apply, -auto-approve, -input=false]
+    dir: terraform
+    waitFor: [tf-init]
+
+options:
+  logging: CLOUD_LOGGING_ONLY

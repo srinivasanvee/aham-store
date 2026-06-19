@@ -1,0 +1,45 @@
+substitutions:
+  _REGION: us-central1
+  _REPO: us-central1-docker.pkg.dev/aham-store/rag-images
+  _SERVICE: rag-ingest
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REPO}/${_SERVICE}:${SHORT_SHA}
+      - ./ingest
+
+  - id: tag-latest
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - ${_REPO}/${_SERVICE}:${SHORT_SHA}
+      - ${_REPO}/${_SERVICE}:latest
+    waitFor: [build]
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: [push, --all-tags, ${_REPO}/${_SERVICE}]
+    waitFor: [tag-latest]
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REPO}/${_SERVICE}:${SHORT_SHA}
+      - --region=${_REGION}
+      - --project=aham-store
+    waitFor: [push]
+
+images:
+  - ${_REPO}/${_SERVICE}:${SHORT_SHA}
+  - ${_REPO}/${_SERVICE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY

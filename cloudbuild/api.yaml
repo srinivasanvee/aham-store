@@ -1,0 +1,46 @@
+substitutions:
+  _REGION: us-central1
+  _ZONE: us-central1-a
+  _CLUSTER: rag-cluster
+  _REPO: us-central1-docker.pkg.dev/aham-store/rag-images
+  _SERVICE: rag-api
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REPO}/${_SERVICE}:${SHORT_SHA}
+      - ./api
+
+  - id: tag-latest
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - ${_REPO}/${_SERVICE}:${SHORT_SHA}
+      - ${_REPO}/${_SERVICE}:latest
+    waitFor: [build]
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: [push, --all-tags, ${_REPO}/${_SERVICE}]
+    waitFor: [tag-latest]
+
+  - id: deploy
+    name: gcr.io/cloud-builders/gke-deploy
+    args:
+      - run
+      - --image=${_REPO}/${_SERVICE}:${SHORT_SHA}
+      - --cluster=${_CLUSTER}
+      - --location=${_ZONE}
+      - --namespace=default
+      - --filename=k8s/
+    waitFor: [push]
+
+images:
+  - ${_REPO}/${_SERVICE}:${SHORT_SHA}
+  - ${_REPO}/${_SERVICE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY

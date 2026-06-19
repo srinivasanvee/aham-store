@@ -1,0 +1,40 @@
+substitutions:
+  _BUCKET: gs://aham-store-frontend
+  _PROJECT: aham-store
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/${_PROJECT}/secrets/vite-google-client-id/versions/latest
+      env: VITE_GOOGLE_CLIENT_ID
+    - versionName: projects/${_PROJECT}/secrets/vite-api-url/versions/latest
+      env: VITE_API_URL
+
+steps:
+  - id: install
+    name: node:22
+    entrypoint: npm
+    args: [ci]
+    dir: frontend
+
+  - id: build
+    name: node:22
+    entrypoint: npm
+    args: [run, build]
+    dir: frontend
+    secretEnv: [VITE_GOOGLE_CLIENT_ID, VITE_API_URL]
+    waitFor: [install]
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - storage
+      - rsync
+      - -r
+      - --delete-unmatched-destination-objects
+      - frontend/dist/
+      - ${_BUCKET}/
+    waitFor: [build]
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -121,7 +121,7 @@ aham-store/
 | 4 | Spring Boot query API (GKE + Vertex AI + Gemini) | Done |
 | 5 | Authentication (Google OAuth 2.0 on frontend) | Done |
 | 6 | Frontend hosting (SPA on GCS) | Pending |
-| 7 | CI/CD (Cloud Build triggers) | Pending |
+| 7 | CI/CD (Cloud Build triggers) | Done |
 | 8 | Monitoring (Cloud Monitoring alert for ingest errors) | Pending |
 
 ---
@@ -261,6 +261,84 @@ curl -X POST http://<EXTERNAL-IP>/api/query \
   -H "Authorization: Bearer <GOOGLE-ID-TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"question": "What is the Iliad?"}'
+```
+
+---
+
+## CI/CD
+
+All deployments are automated via Cloud Build triggered on push to `main`. Each pipeline only fires when its own files change.
+
+### Trigger map
+
+| Trigger name | Pipeline file | Fires when changed |
+|---|---|---|
+| `infra-deploy` | `cloudbuild/infra.yaml` | `terraform/**` |
+| `ingest-deploy` | `cloudbuild/ingest.yaml` | `ingest/**` |
+| `api-deploy` | `cloudbuild/api.yaml` | `api/**`, `k8s/**` |
+| `frontend-deploy` | `cloudbuild/frontend.yaml` | `frontend/**` |
+
+All triggers run as `rag-cloudbuild-sa` (defined in `terraform/cloudbuild.tf`).
+
+### Pipeline behaviour
+
+| Pipeline | Steps |
+|---|---|
+| **infra** | `terraform init` → `terraform apply -auto-approve` |
+| **ingest** | `docker build` → `docker push` (SHA + latest tags) → `gcloud run deploy` |
+| **api** | `docker build` → `docker push` (SHA + latest tags) → `gke-deploy` against `k8s/` |
+| **frontend** | `npm ci` → `npm run build` (secrets injected from Secret Manager) → `gcloud storage rsync` to `aham-store-frontend` bucket |
+
+### One-time GitHub connection (required before triggers work)
+
+Terraform creates the trigger resources, but Cloud Build needs the GitHub app installed first:
+
+1. GCP Console → Cloud Build → Triggers → **Connect Repository**
+2. Choose **GitHub (Cloud Build GitHub App)**
+3. Authenticate and select `srinivasanvee/aham-store`
+4. Run `terraform apply` — triggers will now be active
+
+### Secret population for the frontend pipeline
+
+After `terraform apply` creates the secret resources, populate their values:
+
+```bash
+# Google OAuth Client ID (same value as VITE_GOOGLE_CLIENT_ID in frontend/.env)
+echo -n "<client-id>.apps.googleusercontent.com" | \
+  gcloud secrets versions add vite-google-client-id --data-file=-
+
+# GKE LoadBalancer public IP (get after kubectl get service rag-api)
+echo -n "http://<EXTERNAL-IP>" | \
+  gcloud secrets versions add vite-api-url --data-file=-
+```
+
+### Manually trigger a pipeline (without a git push)
+
+```bash
+# Trigger by name from the CLI
+gcloud builds triggers run infra-deploy   --branch=main --project=aham-store
+gcloud builds triggers run ingest-deploy  --branch=main --project=aham-store
+gcloud builds triggers run api-deploy     --branch=main --project=aham-store
+gcloud builds triggers run frontend-deploy --branch=main --project=aham-store
+```
+
+Or: GCP Console → Cloud Build → Triggers → click **Run** next to the trigger name.
+
+### Verify a pipeline ran correctly
+
+```bash
+# Watch live build logs
+gcloud builds list --project=aham-store --limit=5
+gcloud builds log <BUILD_ID> --project=aham-store
+
+# Check deployed revision (ingest)
+gcloud run services describe rag-ingest --region=us-central1 --project=aham-store
+
+# Check rollout (api)
+kubectl rollout status deployment/rag-api
+
+# Check frontend files
+gcloud storage ls gs://aham-store-frontend/
 ```
 
 ---
