@@ -199,7 +199,7 @@ echo -n "your-oauth-client-secret" | \
 
 # 2. Google OAuth Client ID (the public client ID, not the secret)
 #    Same value as VITE_GOOGLE_CLIENT_ID in frontend/.env
-echo -n "876779840923-6k61bkp410fpqmr7ae5anacuif20dg1s.apps.googleusercontent.com" | \
+echo -n "<YOUR-GOOGLE-CLIENT-ID>.apps.googleusercontent.com" | \
   gcloud secrets versions add vite-google-client-id --data-file=-
 
 # 3. API public URL — use the EXTERNAL-IP from Step 8
@@ -215,7 +215,7 @@ echo -n "http://<EXTERNAL-IP>" | \
 cd frontend
 
 # Build with production values injected as environment variables
-VITE_GOOGLE_CLIENT_ID=876779840923-6k61bkp410fpqmr7ae5anacuif20dg1s.apps.googleusercontent.com \
+VITE_GOOGLE_CLIENT_ID=<YOUR-GOOGLE-CLIENT-ID>.apps.googleusercontent.com \
 VITE_API_URL=http://<EXTERNAL-IP-FROM-STEP-8> \
 npm run build
 # Creates frontend/dist/
