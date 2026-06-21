@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  // Relative base so assets resolve correctly when served from a GCS bucket subfolder.
+  // Without this, /assets/... paths 404 because GCS serves from a non-root path.
+  base: './',
   server: {
     port: 5173,
     proxy: {
