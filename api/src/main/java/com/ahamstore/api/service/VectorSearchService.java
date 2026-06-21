@@ -1,7 +1,6 @@
 package com.ahamstore.api.service;
 
 import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
@@ -17,9 +16,6 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class VectorSearchService {
-
-    @Value("${gcp.project-id}")
-    private String projectId;
 
     @Value("${gcp.top-k-results}")
     private int topK;
@@ -41,9 +37,10 @@ public class VectorSearchService {
             .document(userId)
             .collection("vectors");
 
+        // findNearest accepts double[] directly — no FieldValue.vector() wrapper needed
         VectorQuery vectorQuery = vectorsCol.findNearest(
             "embedding",
-            FieldValue.vector(queryEmbedding),
+            queryEmbedding,
             topK,
             VectorQuery.DistanceMeasure.COSINE
         );

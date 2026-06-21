@@ -28,14 +28,18 @@ resource "google_project_iam_member" "cloudbuild_roles" {
 resource "google_secret_manager_secret" "vite_google_client_id" {
   secret_id = "vite-google-client-id"
   project   = var.project_id
-  replication { auto {} }
+  replication {
+    auto {}
+  }
   depends_on = [google_project_service.services]
 }
 
 resource "google_secret_manager_secret" "vite_api_url" {
   secret_id = "vite-api-url"
   project   = var.project_id
-  replication { auto {} }
+  replication {
+    auto {}
+  }
   depends_on = [google_project_service.services]
 }
 

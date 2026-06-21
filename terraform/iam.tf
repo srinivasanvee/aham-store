@@ -12,6 +12,7 @@ resource "google_project_iam_member" "ingest_roles" {
     "roles/storage.objectViewer",
     "roles/aiplatform.user",
     "roles/secretmanager.secretAccessor",
+    "roles/eventarc.eventReceiver",
   ])
   project = var.project_id
   role    = each.value
@@ -56,4 +57,23 @@ resource "google_project_iam_member" "gcs_pubsub_publisher" {
   project = var.project_id
   role    = "roles/pubsub.publisher"
   member  = "serviceAccount:${data.google_storage_project_service_account.gcs_sa.email_address}"
+}
+
+# Grant the Eventarc service agent its required role so it can validate
+# GCS buckets and manage Pub/Sub subscriptions for triggers.
+variable "project_number" {
+  type    = string
+  default = "876779840923"
+}
+
+resource "google_project_iam_member" "eventarc_service_agent" {
+  project = var.project_id
+  role    = "roles/eventarc.serviceAgent"
+  member  = "serviceAccount:service-${var.project_number}@gcp-sa-eventarc.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "eventarc_event_receiver" {
+  project = var.project_id
+  role    = "roles/eventarc.eventReceiver"
+  member  = "serviceAccount:service-${var.project_number}@gcp-sa-eventarc.iam.gserviceaccount.com"
 }

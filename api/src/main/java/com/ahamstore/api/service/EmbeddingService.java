@@ -7,7 +7,6 @@ import com.google.cloud.aiplatform.v1.PredictionServiceClient;
 import com.google.cloud.aiplatform.v1.PredictionServiceSettings;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Struct;
-import com.google.protobuf.Value;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,9 +47,12 @@ public class EmbeddingService {
         EndpointName endpoint = EndpointName.ofProjectLocationPublisherModelName(
             projectId, location, "google", embeddingModel);
 
-        Value instance = Value.newBuilder()
+        // Use fully qualified com.google.protobuf.Value to avoid clash with Spring @Value
+        com.google.protobuf.Value instance = com.google.protobuf.Value.newBuilder()
             .setStructValue(Struct.newBuilder()
-                .putFields("content", Value.newBuilder().setStringValue(text).build())
+                .putFields("content", com.google.protobuf.Value.newBuilder()
+                    .setStringValue(text)
+                    .build())
                 .build())
             .build();
 

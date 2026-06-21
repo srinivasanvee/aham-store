@@ -53,9 +53,11 @@
     </dependency>
 
     <!-- GCP — versions managed by libraries-bom -->
+    <!-- Pin Firestore to 3.27.0 which has VectorQuery and findNearest(double[]) -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-firestore</artifactId>
+      <version>3.27.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
@@ -64,13 +66,6 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-vertexai</artifactId>
-    </dependency>
-
-    <!-- Utility -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
     </dependency>
 
     <!-- Test -->
@@ -86,14 +81,6 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-            </exclude>
-          </excludes>
-        </configuration>
       </plugin>
     </plugins>
   </build>

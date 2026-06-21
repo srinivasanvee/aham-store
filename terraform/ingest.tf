@@ -1,5 +1,7 @@
 locals {
-  ingest_image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.images.repository_id}/rag-ingest:latest"
+  # Falls back to Google's public hello image until the real image is pushed in Step 7.
+  # Cloud Build (ingest-deploy trigger) replaces this on first push to main.
+  ingest_image = "us-docker.pkg.dev/cloudrun/container/hello:latest"
 }
 
 resource "google_cloud_run_v2_service" "ingest" {

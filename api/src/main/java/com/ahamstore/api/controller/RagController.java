@@ -6,7 +6,6 @@ import com.ahamstore.api.service.EmbeddingService;
 import com.ahamstore.api.service.GenerationService;
 import com.ahamstore.api.service.VectorSearchService;
 import com.ahamstore.api.service.VectorSearchService.Chunk;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -19,19 +18,25 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
 public class RagController {
 
     private final EmbeddingService embeddingService;
     private final VectorSearchService vectorSearchService;
     private final GenerationService generationService;
 
+    public RagController(EmbeddingService embeddingService,
+                         VectorSearchService vectorSearchService,
+                         GenerationService generationService) {
+        this.embeddingService = embeddingService;
+        this.vectorSearchService = vectorSearchService;
+        this.generationService = generationService;
+    }
+
     @PostMapping("/query")
     public ResponseEntity<QueryResponse> query(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody QueryRequest req) throws Exception {
 
-        // Google ID token "sub" claim is the stable per-user identifier
         String userId = jwt.getSubject();
         String question = req.getQuestion();
 
