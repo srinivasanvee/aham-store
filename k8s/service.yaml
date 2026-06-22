@@ -3,8 +3,13 @@ kind: Service
 metadata:
   name: rag-api
   namespace: default
+  annotations:
+    # Static IP reserved via terraform/static-ip.tf — stays the same across kube-down/up cycles.
+    # Get the value with: terraform output api_static_ip
+    kubernetes.io/ingress.allow-http: "true"
 spec:
   type: LoadBalancer
+  loadBalancerIP: STATIC_IP_PLACEHOLDER
   selector:
     app: rag-api
   ports:
