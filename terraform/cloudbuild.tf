@@ -60,7 +60,7 @@ resource "google_cloudbuild_trigger" "infra" {
     push { branch = "^main$" }
   }
 
-  included_files = ["terraform/**"]
+  included_files = ["terraform/**", "cloudbuild/infra.yaml"]
 }
 
 resource "google_cloudbuild_trigger" "ingest" {
@@ -75,7 +75,7 @@ resource "google_cloudbuild_trigger" "ingest" {
     push { branch = "^main$" }
   }
 
-  included_files = ["ingest/**"]
+  included_files = ["ingest/**", "cloudbuild/ingest.yaml"]
 }
 
 resource "google_cloudbuild_trigger" "api" {
@@ -90,7 +90,7 @@ resource "google_cloudbuild_trigger" "api" {
     push { branch = "^main$" }
   }
 
-  included_files = ["api/**", "k8s/**"]
+  included_files = ["api/**", "k8s/**", "cloudbuild/api.yaml"]
 }
 
 resource "google_cloudbuild_trigger" "frontend" {
@@ -105,5 +105,5 @@ resource "google_cloudbuild_trigger" "frontend" {
     push { branch = "^main$" }
   }
 
-  included_files = ["frontend/**"]
+  included_files = ["frontend/**", "cloudbuild/frontend.yaml"]
 }
