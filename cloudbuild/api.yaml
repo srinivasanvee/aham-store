@@ -24,7 +24,10 @@ steps:
 
   - id: push
     name: gcr.io/cloud-builders/docker
-    args: [push, --all-tags, ${_REPO}/${_SERVICE}]
+    args:
+      - push
+      - --all-tags
+      - ${_REPO}/${_SERVICE}
     waitFor: [tag-latest]
 
   - id: deploy
