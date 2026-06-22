@@ -26,9 +26,4 @@ resource "google_container_node_pool" "primary" {
       mode = "GKE_METADATA"
     }
   }
-
-  autoscaling {
-    min_node_count = 1
-    max_node_count = 3
-  }
 }

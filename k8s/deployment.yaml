@@ -4,7 +4,7 @@ metadata:
   name: rag-api
   namespace: default
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: rag-api

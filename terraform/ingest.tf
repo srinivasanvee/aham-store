@@ -28,7 +28,7 @@ resource "google_cloud_run_v2_service" "ingest" {
     # Scale to zero when idle; one instance handles sequential Eventarc deliveries
     scaling {
       min_instance_count = 0
-      max_instance_count = 3
+      max_instance_count = 1
     }
 
     # Allow up to 5 min for large book processing
